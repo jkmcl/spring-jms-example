@@ -11,12 +11,14 @@ import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.annotation.JmsListenerConfigurer;
 import org.springframework.jms.config.JmsListenerEndpointRegistrar;
 import org.springframework.jms.config.SimpleJmsListenerEndpoint;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 import hello.messaging.CommandMessageListener;
 import hello.messaging.InboundMessageListener;
 
 @Configuration
 @EnableJms
+@EnableAsync
 @EnableConfigurationProperties(JmsProperties.class)
 public class JmsConfiguration implements JmsListenerConfigurer {
 
@@ -47,6 +49,7 @@ public class JmsConfiguration implements JmsListenerConfigurer {
 	@Bean
 	@ConditionalOnProperty(name="activemq.enabled", havingValue="false", matchIfMissing=false)
 	public ConnectionFactory connectionFactory() {
+		// We can create our own connection factory here if necessary
 		return null;
 	}
 
