@@ -46,10 +46,15 @@ public class ApplicationTest {
 
 	@Test
 	public void testMultipleInboundMessages() throws Exception {
-		log.info("Sending 3 inbound messages...");
+		log.info("Sending 8 inbound messages...");
 		messenger.send(properties.getQueue().getInbound(), "msg1");
 		messenger.send(properties.getQueue().getInbound(), "msg2");
 		messenger.send(properties.getQueue().getInbound(), "msg3");
+		messenger.send(properties.getQueue().getInbound(), "msg4");
+		messenger.send(properties.getQueue().getInbound(), "msg5");
+		messenger.send(properties.getQueue().getInbound(), "msg6");
+		messenger.send(properties.getQueue().getInbound(), "msg7");
+		messenger.send(properties.getQueue().getInbound(), "msg8");
 
 		Thread.sleep(3000);
 	}

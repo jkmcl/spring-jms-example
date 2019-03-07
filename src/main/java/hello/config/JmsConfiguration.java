@@ -1,6 +1,7 @@
 package hello.config;
 
 import javax.jms.ConnectionFactory;
+import javax.jms.MessageListener;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -11,43 +12,44 @@ import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.annotation.JmsListenerConfigurer;
 import org.springframework.jms.config.JmsListenerEndpointRegistrar;
 import org.springframework.jms.config.SimpleJmsListenerEndpoint;
-import org.springframework.scheduling.annotation.EnableAsync;
 
-import hello.messaging.CommandMessageListener;
-import hello.messaging.InboundMessageListener;
+import hello.messaging.CommandMessageProcessor;
+import hello.messaging.InboundMessageProcessor;
 
 @Configuration
 @EnableJms
-@EnableAsync
 @EnableConfigurationProperties(JmsProperties.class)
 public class JmsConfiguration implements JmsListenerConfigurer {
 
 	@Autowired
-	private InboundMessageListener inboundMessageListener;
-
-	@Autowired
-	private CommandMessageListener commandMessageListener;
-
-	@Autowired
 	private JmsProperties properties;
+
+	@Autowired
+	private InboundMessageProcessor inMsgProcessor;
+
+	@Autowired
+	private CommandMessageProcessor cmdMsgProcessor;
+
+	private static void registerEndpoint(JmsListenerEndpointRegistrar registrar, String destination, MessageListener messageListener) {
+		SimpleJmsListenerEndpoint inboundEndpoint = new SimpleJmsListenerEndpoint();
+		inboundEndpoint.setId(destination);
+		inboundEndpoint.setDestination(destination);
+		inboundEndpoint.setMessageListener(messageListener);
+		registrar.registerEndpoint(inboundEndpoint);
+	}
 
 	@Override
 	public void configureJmsListeners(JmsListenerEndpointRegistrar registrar) {
-		SimpleJmsListenerEndpoint inboundEndpoint = new SimpleJmsListenerEndpoint();
-		inboundEndpoint.setId(properties.getQueue().getInbound());
-		inboundEndpoint.setDestination(properties.getQueue().getInbound());
-		inboundEndpoint.setMessageListener(inboundMessageListener);
-		registrar.registerEndpoint(inboundEndpoint);
-
-		SimpleJmsListenerEndpoint commandEndpoint = new SimpleJmsListenerEndpoint();
-		commandEndpoint.setId(properties.getQueue().getCommand());
-		commandEndpoint.setDestination(properties.getQueue().getCommand());
-		commandEndpoint.setMessageListener(commandMessageListener);
-		registrar.registerEndpoint(commandEndpoint);
+		registerEndpoint(registrar, properties.getQueue().getInbound(), message -> {
+			inMsgProcessor.onMessage(message);
+		});
+		registerEndpoint(registrar, properties.getQueue().getCommand(), message -> {
+			cmdMsgProcessor.onMessage(message);
+		});
 	}
 
 	@Bean
-	@ConditionalOnProperty(name="activemq.enabled", havingValue="false", matchIfMissing=false)
+	@ConditionalOnProperty(name = "activemq.enabled", havingValue = "false", matchIfMissing = false)
 	public ConnectionFactory connectionFactory() {
 		// We can create our own connection factory here if necessary
 		return null;
