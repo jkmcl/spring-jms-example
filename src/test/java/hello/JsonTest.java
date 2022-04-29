@@ -1,8 +1,8 @@
 package hello;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,12 +11,12 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 import hello.service.Command;
 
-public class JsonTest {
+class JsonTest {
 
 	private final Logger log = LoggerFactory.getLogger(JsonTest.class);
 
 	@Test
-	public void test() throws Exception {
+	void test() throws Exception {
 		Command inCmd = new Command();
 		inCmd.setName("doWork");
 		inCmd.putParameter("param1", "value1");

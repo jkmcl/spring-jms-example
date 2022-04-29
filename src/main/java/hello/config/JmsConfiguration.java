@@ -40,12 +40,8 @@ public class JmsConfiguration implements JmsListenerConfigurer {
 
 	@Override
 	public void configureJmsListeners(JmsListenerEndpointRegistrar registrar) {
-		registerEndpoint(registrar, properties.getQueue().getInbound(), message -> {
-			inMsgProcessor.onMessage(message);
-		});
-		registerEndpoint(registrar, properties.getQueue().getCommand(), message -> {
-			cmdMsgProcessor.onMessage(message);
-		});
+		registerEndpoint(registrar, properties.getQueue().getInbound(), message -> inMsgProcessor.onMessage(message));
+		registerEndpoint(registrar, properties.getQueue().getCommand(), message -> cmdMsgProcessor.onMessage(message));
 	}
 
 	@Bean

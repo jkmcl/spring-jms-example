@@ -1,12 +1,10 @@
 package hello;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -15,9 +13,8 @@ import hello.messaging.TextMessenger;
 import hello.service.Command;
 import hello.service.DummyService;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
-public class ApplicationTest {
+class ApplicationTest {
 
 	private final Logger log = LoggerFactory.getLogger(ApplicationTest.class);
 
@@ -31,13 +28,13 @@ public class ApplicationTest {
 	JmsProperties properties;
 
 	@Test
-	public void testSendMessage() {
+	void testSendMessage() {
 		log.info("Sending 1 outbound message...");
 		service.sendSomething("This message was sent via the service object");
 	}
 
 	@Test
-	public void testInboundMessage() throws Exception {
+	void testInboundMessage() throws Exception {
 		log.info("Sending 1 inbound message...");
 		messenger.send(properties.getQueue().getInbound(), "Hello world!");
 
@@ -45,7 +42,7 @@ public class ApplicationTest {
 	}
 
 	@Test
-	public void testMultipleInboundMessages() throws Exception {
+	void testMultipleInboundMessages() throws Exception {
 		log.info("Sending 8 inbound messages...");
 		messenger.send(properties.getQueue().getInbound(), "msg1");
 		messenger.send(properties.getQueue().getInbound(), "msg2");
@@ -60,7 +57,7 @@ public class ApplicationTest {
 	}
 
 	@Test
-	public void testCommandMessage() throws Exception {
+	void testCommandMessage() throws Exception {
 		log.info("Sending 1 command message...");
 
 		Command command = new Command();
