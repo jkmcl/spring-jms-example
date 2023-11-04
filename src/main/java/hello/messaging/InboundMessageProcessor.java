@@ -15,6 +15,7 @@ public class InboundMessageProcessor extends AbstractMessageProcessor {
 	@Autowired
 	private DummyService dummyService;
 
+	@Override
 	public void processMessage(String text) {
 		log.info("Processing message...");
 		dummyService.logSomething(text);

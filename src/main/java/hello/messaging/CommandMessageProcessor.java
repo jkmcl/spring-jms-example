@@ -15,6 +15,7 @@ public class CommandMessageProcessor extends AbstractMessageProcessor {
 
 	private final ObjectMapper mapper = new ObjectMapper();
 
+	@Override
 	public void processMessage(String text) throws Exception {
 		log.info("Processing message...");
 		Command command;

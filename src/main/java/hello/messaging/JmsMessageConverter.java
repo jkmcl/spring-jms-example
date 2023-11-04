@@ -68,7 +68,7 @@ public class JmsMessageConverter implements MessageConverter {
 			bytesMessage.readBytes(bytes);
 			text = new String(bytes, charset);
 		} else {
-			throw new MessageConversionException("Unsupported JMS messge type");
+			throw new MessageConversionException("Unsupported JMS message type");
 		}
 
 		return text;

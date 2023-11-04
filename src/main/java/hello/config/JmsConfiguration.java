@@ -46,7 +46,7 @@ public class JmsConfiguration implements JmsListenerConfigurer {
 
 	@Bean
 	@ConditionalOnProperty(name = "activemq.enabled", havingValue = "false", matchIfMissing = false)
-	public ConnectionFactory connectionFactory() {
+	ConnectionFactory connectionFactory() {
 		// We can create our own connection factory here if necessary
 		return null;
 	}
