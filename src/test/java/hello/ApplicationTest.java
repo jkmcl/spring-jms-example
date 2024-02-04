@@ -1,14 +1,19 @@
 package hello;
 
+import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jms.core.JmsTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import hello.config.JmsProperties;
+import hello.messaging.CommandMessageProcessor;
 import hello.messaging.TextMessenger;
 import hello.service.Command;
 import hello.service.DummyService;
@@ -19,26 +24,42 @@ class ApplicationTest {
 	private final Logger log = LoggerFactory.getLogger(ApplicationTest.class);
 
 	@Autowired
-	TextMessenger messenger;
+	private TextMessenger messenger;
 
 	@Autowired
-	DummyService service;
+	private DummyService service;
 
 	@Autowired
-	JmsProperties properties;
+	private JmsProperties properties;
+
+	@Autowired
+	private JmsTemplate jmsTemplate;
+
+	@Autowired
+	private CommandMessageProcessor cmdMsgProcessor;
 
 	@Test
 	void testSendMessage() {
 		log.info("Sending 1 outbound message...");
-		service.sendSomething("This message was sent via the service object");
+		var expected = "This message was sent via the service object";
+		service.sendSomething(expected);
+
+		await().until(() -> {
+			var str = (String) jmsTemplate.receiveAndConvert(properties.getQueue().getOutbound());
+			return expected.equals(str);
+		});
 	}
 
 	@Test
 	void testInboundMessage() throws Exception {
 		log.info("Sending 1 inbound message...");
-		messenger.send(properties.getQueue().getInbound(), "Hello world!");
+		var expected = "Hello world!";
+		messenger.send(properties.getQueue().getInbound(), expected);
 
-		Thread.sleep(3000);
+		await().until(() -> {
+			var msg = service.getReceivedMessage();
+			return expected.equals(msg);
+		});
 	}
 
 	@Test
@@ -53,7 +74,7 @@ class ApplicationTest {
 		messenger.send(properties.getQueue().getInbound(), "msg7");
 		messenger.send(properties.getQueue().getInbound(), "msg8");
 
-		Thread.sleep(3000);
+		await().until(() -> service.getReceivedMessageCount() == 8);
 	}
 
 	@Test
@@ -71,7 +92,17 @@ class ApplicationTest {
 
 		messenger.send(properties.getQueue().getCommand(), json);
 
-		Thread.sleep(3000);
+		var commandRef = new Reference<Command>();
+		await().until(() -> {
+			var cmd = cmdMsgProcessor.getReceivedCommand();
+			commandRef.set(cmd);
+			return cmd != null;
+		});
+
+		var receivedCommand = commandRef.get();
+		assertEquals(command.getName(), receivedCommand.getName());
+		assertEquals(command.getParameter("param1"), receivedCommand.getParameter("param1"));
+		assertEquals(command.getParameter("param2"), receivedCommand.getParameter("param2"));
 	}
 
 }

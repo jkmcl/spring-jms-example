@@ -1,5 +1,8 @@
 package hello.messaging;
 
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -15,6 +18,8 @@ public class CommandMessageProcessor extends AbstractMessageProcessor {
 
 	private final ObjectMapper mapper = new ObjectMapper();
 
+	private final Queue<Command> receivedCommands = new ConcurrentLinkedQueue<>();
+
 	public CommandMessageProcessor(JmsMessageConverter jmsMessageConverter) {
 		super(jmsMessageConverter);
 	}
@@ -26,6 +31,11 @@ public class CommandMessageProcessor extends AbstractMessageProcessor {
 		command = mapper.readValue(text, Command.class);
 		log.info("Command received: {}", command.getName());
 		command.getParameters().forEach((k, v) -> log.info("name: {}; value: {}", k, v));
+		receivedCommands.add(command);
+	}
+
+	public Command getReceivedCommand() {
+		return receivedCommands.poll();
 	}
 
 }
