@@ -15,6 +15,10 @@ public class CommandMessageProcessor extends AbstractMessageProcessor {
 
 	private final ObjectMapper mapper = new ObjectMapper();
 
+	public CommandMessageProcessor(JmsMessageConverter jmsMessageConverter) {
+		super(jmsMessageConverter);
+	}
+
 	@Override
 	public void processMessage(String text) throws Exception {
 		log.info("Processing message...");

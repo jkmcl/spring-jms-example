@@ -3,21 +3,18 @@ package hello.messaging;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-import javax.annotation.PostConstruct;
-import javax.jms.BytesMessage;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.support.converter.MessageConversionException;
 import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.stereotype.Component;
 
 import hello.config.JmsProperties;
+import jakarta.jms.BytesMessage;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.Session;
+import jakarta.jms.TextMessage;
 
 @Component
 public class JmsMessageConverter implements MessageConverter {
@@ -28,11 +25,7 @@ public class JmsMessageConverter implements MessageConverter {
 
 	private Charset charset = StandardCharsets.UTF_8;
 
-	@Autowired
-	private JmsProperties jmsProperties;
-
-	@PostConstruct
-	public void init() {
+	public JmsMessageConverter(JmsProperties jmsProperties) {
 		sendBytes = jmsProperties.isSendBytes();
 		charset = jmsProperties.getCharset();
 		log.debug("sendBytes: {}; charset: {}", sendBytes, charset);
@@ -60,10 +53,9 @@ public class JmsMessageConverter implements MessageConverter {
 
 		String text;
 
-		if (message instanceof TextMessage) {
-			text = ((TextMessage) message).getText();
-		} else if (message instanceof BytesMessage) {
-			BytesMessage bytesMessage = ((BytesMessage) message);
+		if (message instanceof TextMessage textMessage) {
+			text = textMessage.getText();
+		} else if (message instanceof BytesMessage bytesMessage) {
 			byte[] bytes = new byte[(int) bytesMessage.getBodyLength()];
 			bytesMessage.readBytes(bytes);
 			text = new String(bytes, charset);

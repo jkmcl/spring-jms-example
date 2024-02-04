@@ -1,8 +1,5 @@
 package hello.config;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.MessageListener;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -15,6 +12,8 @@ import org.springframework.jms.config.SimpleJmsListenerEndpoint;
 
 import hello.messaging.CommandMessageProcessor;
 import hello.messaging.InboundMessageProcessor;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.MessageListener;
 
 @Configuration
 @EnableJms
