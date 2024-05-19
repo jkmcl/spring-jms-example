@@ -1,13 +1,13 @@
 package hello.messaging;
 
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jms.support.converter.MessageConversionException;
 import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 import hello.config.JmsProperties;
 import jakarta.jms.BytesMessage;
@@ -21,9 +21,9 @@ public class JmsMessageConverter implements MessageConverter {
 
 	private final Logger log = LoggerFactory.getLogger(JmsMessageConverter.class);
 
-	private boolean sendBytes = false;
+	private final boolean sendBytes;
 
-	private Charset charset = StandardCharsets.UTF_8;
+	private final Charset charset;
 
 	public JmsMessageConverter(JmsProperties jmsProperties) {
 		sendBytes = jmsProperties.isSendBytes();
@@ -33,37 +33,34 @@ public class JmsMessageConverter implements MessageConverter {
 
 	@Override
 	public Message toMessage(Object object, Session session) throws JMSException, MessageConversionException {
-		log.debug("Converting from String to Message...");
+		log.debug("Converting String to Message...");
 
-		String text = (String) object;
-
-		if (!sendBytes) {
-			return session.createTextMessage(text);
+		if (object instanceof String text) {
+			if (!sendBytes) {
+				return session.createTextMessage(text);
+			} else {
+				var bytesMessage = session.createBytesMessage();
+				bytesMessage.writeBytes(text.getBytes(charset));
+				return bytesMessage;
+			}
 		}
 
-		byte[] bytes = text.getBytes(charset);
-		BytesMessage bytesMessage = session.createBytesMessage();
-		bytesMessage.writeBytes(bytes);
-		return bytesMessage;
+		throw new MessageConversionException("Unsupported object type: " + ObjectUtils.nullSafeClassName(object));
 	}
 
 	@Override
 	public Object fromMessage(Message message) throws JMSException, MessageConversionException {
-		log.debug("Converting from Message to String...");
-
-		String text;
+		log.debug("Converting Message to String...");
 
 		if (message instanceof TextMessage textMessage) {
-			text = textMessage.getText();
+			return textMessage.getText();
 		} else if (message instanceof BytesMessage bytesMessage) {
-			byte[] bytes = new byte[(int) bytesMessage.getBodyLength()];
+			var bytes = new byte[(int) bytesMessage.getBodyLength()];
 			bytesMessage.readBytes(bytes);
-			text = new String(bytes, charset);
-		} else {
-			throw new MessageConversionException("Unsupported JMS message type");
+			return new String(bytes, charset);
 		}
 
-		return text;
+		throw new MessageConversionException("Unsupported message type: " + ObjectUtils.nullSafeClassName(message));
 	}
 
 }

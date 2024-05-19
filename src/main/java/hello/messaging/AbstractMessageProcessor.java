@@ -21,7 +21,7 @@ public abstract class AbstractMessageProcessor implements MessageListener {
 		try {
 			processMessage((String) jmsMessageConverter.fromMessage(message));
 		} catch (Exception e) {
-			log.error("Unable to process message", e);
+			log.error("Failed to process message", e);
 		}
 	}
 

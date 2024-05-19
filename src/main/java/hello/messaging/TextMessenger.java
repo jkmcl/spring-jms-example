@@ -1,6 +1,6 @@
 package hello.messaging;
 
-import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.JmsOperations;
 import org.springframework.stereotype.Component;
 
 import hello.config.JmsProperties;
@@ -11,13 +11,16 @@ import hello.config.JmsProperties;
 @Component
 public class TextMessenger {
 
+	private final JmsOperations operations;
+
 	private final String outboundQueue;
 
-	private final JmsTemplate jmsTemplate;
+	private final String inboundQueue;
 
-	public TextMessenger(JmsProperties properties, JmsTemplate template) {
+	public TextMessenger(JmsProperties properties, JmsOperations operations) {
+		this.operations = operations;
 		outboundQueue = properties.getQueue().getOutbound();
-		jmsTemplate = template;
+		inboundQueue = properties.getQueue().getInbound();
 	}
 
 	public void send(String text) {
@@ -25,7 +28,15 @@ public class TextMessenger {
 	}
 
 	public void send(String destinationName, String text) {
-		jmsTemplate.convertAndSend(destinationName, text);
+		operations.convertAndSend(destinationName, text);
+	}
+
+	public String receive() {
+		return receive(inboundQueue);
+	}
+
+	public String receive(String destinationName) {
+		return (String) operations.receiveAndConvert(destinationName);
 	}
 
 }

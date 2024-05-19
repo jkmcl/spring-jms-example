@@ -39,6 +39,14 @@ class ApplicationTest {
 	private CommandMessageProcessor cmdMsgProcessor;
 
 	@Test
+	void testTextMessenger() {
+		var expected = "This message was sent via the messenger object";
+		messenger.send(properties.getQueue().getOutbound(), expected);
+		var actual = messenger.receive(properties.getQueue().getOutbound());
+		assertEquals(expected, actual);
+	}
+
+	@Test
 	void testSendMessage() {
 		log.info("Sending 1 outbound message...");
 		var expected = "This message was sent via the service object";
